@@ -150,7 +150,7 @@
                 Console.Write('_');
                 map[playerY, playerX] = 'P';
                 Console.SetCursorPosition(playerX, playerY);
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Blue;
                 Console.Write('P');
                 Console.ResetColor();
 
@@ -196,7 +196,7 @@
                             Console.ResetColor();
                             break;
                         case 'P':
-                            Console.ForegroundColor = ConsoleColor.Magenta;
+                            Console.ForegroundColor = ConsoleColor.Blue;
                             Console.Write(map[i, j]);
                             Console.ResetColor();
                             break;
@@ -252,12 +252,12 @@
         static void StartGame()// метод вывода начального экрана
         {
             Console.SetCursorPosition(37, 22);
-            Console.WriteLine("N - начать новую игру");
+            Console.WriteLine("W - начать новую игру");
             Console.SetCursorPosition(37, 23);
             Console.WriteLine("L - загрузить последнее сохранение");
             switch (Console.ReadKey().Key)
             {
-                case ConsoleKey.N:
+                case ConsoleKey.W:
                     GenerationMap();
                     break;
                 case ConsoleKey.L:
@@ -284,7 +284,7 @@
 
             Console.Clear();
             Console.SetCursorPosition(40, 22);
-            Console.WriteLine("bR - вернуться в игру ");
+            Console.WriteLine("T - вернуться в игру ");
             Console.SetCursorPosition(40, 23);
             Console.WriteLine("E - сохранить и выйти");
             Console.SetCursorPosition(40, 24);
