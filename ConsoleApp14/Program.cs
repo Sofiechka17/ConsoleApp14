@@ -261,21 +261,27 @@
                     GenerationMap();
                     break;
                 case ConsoleKey.L:
+                    Console.Clear();
                     LoadGame();
+                    UpdateMap();
                     break;
             }
         }
         static void Fail()
         {
             Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Вы проиграли");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Количество шагов: " + NumSteps);
         }
 
         static void Win()
         {
             Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Вы выиграли");
+            Console.ForegroundColor = ConsoleColor.White;
             Console.WriteLine("Количество шагов: " + NumSteps);
         }
 
@@ -284,21 +290,22 @@
 
             Console.Clear();
             Console.SetCursorPosition(40, 22);
-            Console.WriteLine("T - вернуться в игру ");
+            Console.WriteLine("RR - вернуться в игру");
             Console.SetCursorPosition(40, 23);
             Console.WriteLine("E - сохранить и выйти");
             Console.SetCursorPosition(40, 24);
             Console.WriteLine("S - выйти без сохранения");
+            Console.CursorVisible = false;
+
             switch (Console.ReadKey().Key)
             {
                 case ConsoleKey.R:
                     UpdateMap();
                     break;
                 case ConsoleKey.E:
-                    {
-                        SaveProgress();
-                        Environment.Exit(0);
-                    }
+                    Console.Clear();
+                    SaveProgress();
+
                     break;
                 case ConsoleKey.S:
                     Environment.Exit(0);
@@ -308,11 +315,10 @@
 
         static void SaveProgress()
         {
-            using (FileStream file = new FileStream("save.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            try
             {
-                using (StreamWriter writer = new StreamWriter(file))
-                {
-                    writer.Write("*");
+                using (StreamWriter writer = new StreamWriter("save.txt"))
+                { //сохранение данных в файл
                     writer.WriteLine(playerX);
                     writer.WriteLine(playerY);
                     writer.WriteLine(playerOldY);
@@ -325,105 +331,57 @@
                     writer.WriteLine(buffcount);
                     writer.WriteLine(buffcounthelp);
                     writer.WriteLine(enemycount);
+
                     for (int i = 0; i < mapSize; i++)//запись координат объктов на карте в файл
                     {
                         for (int j = 0; j < mapSize; j++)
                         {
-                            switch (map[i, j])
-                            {
-                                case 'H':
-                                    writer.WriteLine('H');
-                                    writer.WriteLine(i);
-                                    writer.WriteLine(j);
-                                    break;
-                                case 'B':
-                                    writer.WriteLine('B');
-                                    writer.WriteLine(i);
-                                    writer.WriteLine(j);
-                                    break;
-                                case 'E':
-                                    writer.WriteLine('E');
-                                    writer.WriteLine(i);
-                                    writer.WriteLine(j);
-                                    break;
-                                case 'P':
-                                    writer.WriteLine('P');
-                                    writer.WriteLine(i);
-                                    writer.WriteLine(j);
-                                    break;
-                            }
+                            writer.Write(map[i, j]);
                         }
+                        writer.WriteLine();
                     }
                 }
+                Console.SetCursorPosition(40, 10);
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine("Игра сохранена");
+                Console.ResetColor();
+                Console.ReadKey();
+                StartGame();
             }
+            catch (Exception ex)
+            {
+                Console.SetCursorPosition(mapSize + 48, 11);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Ошибка при сохранении игры: {ex.Message}");
+                Console.ResetColor();
+                StartGame();
+            }
+
         }
 
-        static void LoadGame()
+        static void LoadGame() // загрузка сохраненной игры
         {
-            using (FileStream file = new FileStream("save.txt", FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (StreamReader reader = new StreamReader("save.txt"))
             {
-                using (StreamReader reader = new StreamReader(file))
+                playerX = int.Parse(reader.ReadLine());
+                playerY = int.Parse(reader.ReadLine());
+                playerOldY = int.Parse(reader.ReadLine());
+                playerOldX = int.Parse(reader.ReadLine());
+                PlayerHp = int.Parse(reader.ReadLine());
+                EnemiesHp = int.Parse(reader.ReadLine());
+                PlayerPower = int.Parse(reader.ReadLine());
+                EnemiesPower = int.Parse(reader.ReadLine());
+                NumSteps = int.Parse(reader.ReadLine());
+                buffcount = int.Parse(reader.ReadLine());
+                buffcounthelp = int.Parse(reader.ReadLine());
+                enemycount = int.Parse(reader.ReadLine());
+                for (int i = 0; i < mapSize; i++)
                 {
-
-                    Console.Clear();
-                    string[] units = reader.ReadToEnd().Split('\n');//запись координат объектов в массив из файла
-                    int X = 0; int Y = 0;
-
-                    for (int i = 0; i < mapSize; i++)//создание пустого массива
+                    string save = reader.ReadLine();
+                    for (int j = 0; j < mapSize; j++)
                     {
-                        for (int j = 0; j < mapSize; j++)
-                        {
-                            map[i, j] = '_';
-                            Console.Write(map[i, j]);
-                        }
-                        Console.WriteLine(map[i, 0]);
+                        map[i, j] = save[j];
                     }
-                    while (true)//заполнение массива объектами
-                    {
-                        int countI = 0;
-                        if (Convert.ToChar(units[countI]) == 'H')
-                        {
-                            Y = Convert.ToInt32(units[countI + 1]);
-                            X = Convert.ToInt32(units[countI + 2]);
-                            map[Y, X] = Convert.ToChar(units[countI]);
-                            countI += 3;
-                        }
-                        else if (Convert.ToChar(units[countI]) == 'E')
-                        {
-                            Y = Convert.ToInt32(units[countI + 1]);
-                            X = Convert.ToInt32(units[countI + 2]);
-                            map[Y, X] = Convert.ToChar(units[countI]);
-                            countI += 3;
-                        }
-                        else if (Convert.ToChar(units[countI]) == 'B')
-                        {
-                            Y = Convert.ToInt32(units[countI + 1]);
-                            X = Convert.ToInt32(units[countI + 2]);
-                            map[Y, X] = Convert.ToChar(units[countI]);
-                            countI += 3;
-                        }
-                        else if (Convert.ToChar(units[countI]) == '*')
-                        {
-                            break;
-                        }
-                    }
-                    string[] args = reader.ReadToEnd().Split('\n');//запись значений переменных в массив
-                    playerX = int.Parse(args[1]);
-                    playerY = int.Parse(args[2]);
-                    playerOldY = int.Parse(args[3]);
-                    PlayerHp = int.Parse(args[4]);
-                    EnemiesHp = int.Parse(args[5]);
-                    PlayerPower = int.Parse(args[6]);
-                    EnemiesPower = int.Parse(args[7]);
-                    NumSteps = int.Parse(args[8]);
-                    buffcount = int.Parse(args[9]);
-                    buffcounthelp = int.Parse(args[10]);
-                    enemycount = int.Parse(args[11]);
-
-                    map[playerX, playerY] = 'P';//установка положения игрока
-
-                    UpdateMap();//обновление карты
-
                 }
             }
         }
